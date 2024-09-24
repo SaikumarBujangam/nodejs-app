@@ -13,7 +13,7 @@ jobs:
       id-token: write
       contents: read
     outputs:
-      image: ${{ steps.build-image.outputs.image }}  # Job-level output capturing the image
+      image: ${{ steps.build-image.outputs.image }}  # Set output at the job level
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -39,9 +39,7 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG"  # Set image as output
-        outputs:
-          image: ${{ steps.build-image.outputs.image }}  # Define output for the build-image step
+          echo "::set-output name=image::$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG"  # Set the image as output in the step
 
   deploy:
     needs: build
