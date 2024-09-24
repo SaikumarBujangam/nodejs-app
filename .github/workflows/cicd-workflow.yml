@@ -12,8 +12,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    outputs:
-      image: ${{ steps.build-image.outputs.image }}  # Set output at the job level
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -39,10 +37,9 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG"  # Set the image as output in the step
+          echo "IMAGE=$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV  # Set the image as an environment variable
 
   deploy:
-    needs: build
     runs-on: [ ubuntu-latest ]
     permissions:
       id-token: write
@@ -64,7 +61,7 @@ jobs:
         with:
           task-definition: nodejs-app-task-definition.json
           container-name: nodejs-app
-          image: ${{ needs.build.outputs.image }}  # Use the output from the build job
+          image: ${{ env.IMAGE }}  # Use the environment variable set in the build job
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
